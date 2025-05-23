@@ -75,6 +75,7 @@
 
     <div class="summary" id="totalPrice">Total Expected Sales: ₱0</div>
     <div class="summary" id="expenses">Today's Expenses: ₱0</div>
+    <div class="summary" id="profit">Today's Profit: ₱0</div>
 
     <button onclick="saveData()">Save Today's Record</button>
     <button class="download-btn" onclick="downloadData()">Download Records</button>
@@ -91,9 +92,11 @@
       const expenses = parseFloat(document.getElementById('expensesInput').value) || 0;
 
       const totalSales = (spicySold * SPICY_PRICE) + (classicSold * CLASSIC_PRICE);
+      const profit = totalSales - expenses;
 
       document.getElementById('totalPrice').innerText = `Total Expected Sales: ₱${totalSales}`;
       document.getElementById('expenses').innerText = `Today's Expenses: ₱${expenses}`;
+      document.getElementById('profit').innerText = `Today's Profit: ₱${profit}`;
     }
 
     function saveData() {
@@ -103,6 +106,7 @@
       const classicSold = parseInt(document.getElementById('classicSold').value) || 0;
       const expenses = parseFloat(document.getElementById('expensesInput').value) || 0;
       const totalSales = (spicySold * SPICY_PRICE) + (classicSold * CLASSIC_PRICE);
+      const profit = totalSales - expenses;
 
       const record = {
         date: new Date().toLocaleDateString(),
@@ -111,7 +115,8 @@
         spicySold,
         classicSold,
         totalSales,
-        expenses
+        expenses,
+        profit
       };
 
       inventory.push(record);
@@ -124,8 +129,9 @@
     function downloadData() {
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(inventory, null, 2));
       const downloadAnchor = document.createElement('a');
+      const today = new Date().toISOString().split('T')[0];
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", "pastil_inventory.json");
+      downloadAnchor.setAttribute("download", `pastil_inventory_${today}.json`);
       downloadAnchor.click();
     }
   </script>
