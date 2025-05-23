@@ -1,134 +1,91 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Pastil Inventory</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 2rem;
-      background: #f9f9f9;
-    }
-    h1 {
-      text-align: center;
-    }
+    body { font-family: Arial, sans-serif; margin: 2rem; background: #f9f9f9; }
+    h1 { text-align: center; }
     .inventory-section {
-      max-width: 500px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      max-width: 500px; margin: auto; background: white;
+      padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-    label {
-      display: block;
-      margin-top: 10px;
-    }
-    input[type="number"], input[type="date"] {
-      width: 100%;
-      padding: 5px;
-      margin-top: 5px;
-    }
+    label { display: block; margin-top: 10px; }
+    input { width: 100%; padding: 5px; margin-top: 5px; }
     button {
-      margin-top: 15px;
-      padding: 10px;
-      width: 100%;
-      border: none;
-      border-radius: 5px;
-      background-color: #2196F3;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
+      margin-top: 15px; padding: 10px; width: 100%;
+      border: none; border-radius: 5px; font-size: 16px; cursor: pointer;
     }
-    button:hover {
-      background-color: #1976D2;
-    }
-    .summary {
-      margin-top: 10px;
-      font-weight: bold;
-      font-size: 16px;
-      text-align: center;
-    }
+    .save-btn { background-color: #4CAF50; color: white; }
+    .view-btn { background-color: #2196F3; color: white; }
+    .summary { margin-top: 15px; font-weight: bold; text-align: center; }
   </style>
 </head>
 <body>
   <h1>Pastil Inventory</h1>
   <div class="inventory-section">
     <label>Select Date:</label>
-    <input type="date" id="recordDate"><label>Spicy Cooked:</label>
-<input type="number" id="spicyCooked" min="0">
+    <input type="date" id="dateInput">
+    <label>Spicy Cooked:</label>
+    <input type="number" id="spicyCooked" min="0">
+    <label>Classic Cooked:</label>
+    <input type="number" id="classicCooked" min="0">
+    <label>Spicy Sold (170 each):</label>
+    <input type="number" id="spicySold" min="0">
+    <label>Classic Sold (150 each):</label>
+    <input type="number" id="classicSold" min="0">
+    <label>Expenses:</label>
+    <input type="number" id="expensesInput" min="0">
 
-<label>Classic Cooked:</label>
-<input type="number" id="classicCooked" min="0">
+    <div class="summary" id="summary"></div>
 
-<label>Spicy Sold:</label>
-<input type="number" id="spicySold" min="0" oninput="updateSummary()">
+    <button class="save-btn" onclick="saveAndDownload()">Save & Download</button>
+    <button class="view-btn" onclick="window.open('records.html', '_blank')">View All Records</button>
+  </div>
 
-<label>Classic Sold:</label>
-<input type="number" id="classicSold" min="0" oninput="updateSummary()">
-
-<label>Expenses:</label>
-<input type="number" id="expenses" min="0" oninput="updateSummary()">
-
-<div class="summary" id="summaryDisplay"></div>
-<button onclick="saveAndDownload()">Download/Update Record</button>
-
-  </div>  <script>
-    const SPICY_PRICE = 170;
+  <script>
     const CLASSIC_PRICE = 150;
-
-    function updateSummary() {
-      const spicyCooked = parseInt(document.getElementById('spicyCooked').value) || 0;
-      const classicCooked = parseInt(document.getElementById('classicCooked').value) || 0;
-      const spicySold = parseInt(document.getElementById('spicySold').value) || 0;
-      const classicSold = parseInt(document.getElementById('classicSold').value) || 0;
-      const expenses = parseFloat(document.getElementById('expenses').value) || 0;
-
-      const spicyLeft = spicyCooked - spicySold;
-      const classicLeft = classicCooked - classicSold;
-      if (spicyLeft < 0 || classicLeft < 0) {
-        document.getElementById('summaryDisplay').innerText = "Error: Sold jars exceed cooked jars.";
-        return;
-      }
-
-      const totalSales = (spicySold * SPICY_PRICE) + (classicSold * CLASSIC_PRICE);
-      const profit = totalSales - expenses;
-
-      document.getElementById('summaryDisplay').innerText =
-        `Spicy Left: ${spicyLeft}, Classic Left: ${classicLeft}\nTotal Sales: ${totalSales}, Expenses: ${expenses}, Profit: ${profit}`;
-    }
+    const SPICY_PRICE = 170;
 
     function saveAndDownload() {
-      const date = document.getElementById('recordDate').value;
-      if (!date) return alert("Please select a date.");
+      const date = document.getElementById('dateInput').value;
+      const spicyCooked = +document.getElementById('spicyCooked').value || 0;
+      const classicCooked = +document.getElementById('classicCooked').value || 0;
+      const spicySold = +document.getElementById('spicySold').value || 0;
+      const classicSold = +document.getElementById('classicSold').value || 0;
+      const expenses = +document.getElementById('expensesInput').value || 0;
 
-      const spicyCooked = parseInt(document.getElementById('spicyCooked').value) || 0;
-      const classicCooked = parseInt(document.getElementById('classicCooked').value) || 0;
-      const spicySold = parseInt(document.getElementById('spicySold').value) || 0;
-      const classicSold = parseInt(document.getElementById('classicSold').value) || 0;
-      const expenses = parseFloat(document.getElementById('expenses').value) || 0;
+      if (!date) return alert("Select a date.");
+      if (spicySold > spicyCooked || classicSold > classicCooked)
+        return alert("Sold jars cannot be more than cooked jars.");
 
       const spicyLeft = spicyCooked - spicySold;
       const classicLeft = classicCooked - classicSold;
-      if (spicyLeft < 0 || classicLeft < 0) {
-        return alert("Error: Sold jars exceed cooked jars.");
-      }
-
       const totalSales = (spicySold * SPICY_PRICE) + (classicSold * CLASSIC_PRICE);
       const profit = totalSales - expenses;
 
-      const record = `Date: ${date}\nSpicy Cooked: ${spicyCooked}\nClassic Cooked: ${classicCooked}\nSpicy Sold: ${spicySold}\nClassic Sold: ${classicSold}\nSpicy Left: ${spicyLeft}\nClassic Left: ${classicLeft}\nTotal Sales: ${totalSales}\nExpenses: ${expenses}\nProfit: ${profit}\n--------------------------\n`;
+      const record = {
+        date, spicyCooked, classicCooked, spicySold, classicSold,
+        spicyLeft, classicLeft, totalSales, expenses, profit
+      };
 
-      localStorage.setItem(date, record);
-      downloadTxt(date);
-    }
+      // Save to localStorage
+      const records = JSON.parse(localStorage.getItem("pastilRecords") || "{}");
+      records[date] = record;
+      localStorage.setItem("pastilRecords", JSON.stringify(records));
 
-    function downloadTxt(date) {
-      let data = localStorage.getItem(date);
-      const blob = new Blob([data], { type: "text/plain" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `pastil_record_${date}.txt`;
-      link.click();
+      // Prepare download
+      const text = `${date}\nSpicy Cooked: ${spicyCooked}\nClassic Cooked: ${classicCooked}
+Spicy Sold: ${spicySold}\nClassic Sold: ${classicSold}
+Spicy Left: ${spicyLeft}\nClassic Left: ${classicLeft}
+Total Sales: ${totalSales}\nExpenses: ${expenses}\nProfit: ${profit}\n-----------------`;
+
+      const blob = new Blob([text], { type: "text/plain" });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${date}.txt`;
+      a.click();
     }
-  </script></body>
+  </script>
+</body>
 </html>
