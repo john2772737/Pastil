@@ -30,22 +30,19 @@
       margin-top: 5px;
     }
     button {
-      margin-top: 15px;
+      margin-top: 10px;
       padding: 10px;
       width: 100%;
       border: none;
       border-radius: 5px;
-      background-color: #4CAF50;
       color: white;
       font-size: 16px;
       cursor: pointer;
     }
-    button:hover {
-      background-color: #45a049;
-    }
-    .download-btn {
-      background-color: #2196F3;
-    }
+    .save-btn { background-color: #4CAF50; }
+    .download-btn { background-color: #2196F3; }
+    .clear-btn { background-color: red; }
+    .image-btn { background-color: #9C27B0; }
     .summary {
       margin-top: 15px;
       font-weight: bold;
@@ -57,7 +54,7 @@
 <body>
   <h1>Pastil Inventory</h1>
 
-  <div class="inventory-section">
+  <div id="capture" class="inventory-section">
     <label>Spicy Cooked Today:</label>
     <input type="number" id="spicyCooked" min="0">
 
@@ -77,14 +74,19 @@
     <div class="summary" id="expenses">Today's Expenses: ₱0</div>
     <div class="summary" id="profit">Today's Profit: ₱0</div>
 
-    <button onclick="saveData()">Save Today's Record</button>
-    <button class="download-btn" onclick="downloadData()">Download Records</button>
+    <button class="save-btn" onclick="saveData()">Save Today's Record</button>
+    <button class="download-btn" onclick="downloadData()">Download Records (.json)</button>
+    <button class="image-btn" onclick="saveAsImage()">Save As Image</button>
+    <button class="clear-btn" onclick="clearData()">Clear All Records</button>
   </div>
+
+  <!-- HTML2Canvas Library -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
   <script>
     const CLASSIC_PRICE = 150;
     const SPICY_PRICE = 170;
-    const inventory = [];
+    let inventory = JSON.parse(localStorage.getItem('pastilInventory')) || [];
 
     function updateSummary() {
       const spicySold = parseInt(document.getElementById('spicySold').value) || 0;
@@ -108,8 +110,9 @@
       const totalSales = (spicySold * SPICY_PRICE) + (classicSold * CLASSIC_PRICE);
       const profit = totalSales - expenses;
 
+      const date = new Date().toLocaleDateString();
       const record = {
-        date: new Date().toLocaleDateString(),
+        date,
         spicyCooked,
         classicCooked,
         spicySold,
@@ -119,20 +122,46 @@
         profit
       };
 
-      inventory.push(record);
-      alert("Record saved for " + record.date);
+      const existingIndex = inventory.findIndex(item => item.date === date);
+      if (existingIndex !== -1) {
+        inventory[existingIndex] = record;
+      } else {
+        inventory.push(record);
+      }
+
+      localStorage.setItem('pastilInventory', JSON.stringify(inventory));
+      alert("Record saved for " + date);
 
       document.querySelectorAll('input[type="number"]').forEach(input => input.value = '');
       updateSummary();
     }
 
     function downloadData() {
+      const today = new Date().toISOString().split('T')[0];
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(inventory, null, 2));
       const downloadAnchor = document.createElement('a');
-      const today = new Date().toISOString().split('T')[0];
       downloadAnchor.setAttribute("href", dataStr);
       downloadAnchor.setAttribute("download", `pastil_inventory_${today}.json`);
       downloadAnchor.click();
+    }
+
+    function saveAsImage() {
+      const captureElement = document.getElementById('capture');
+      html2canvas(captureElement).then(canvas => {
+        const image = canvas.toDataURL("image/png");
+        const link = document.createElement('a');
+        link.download = 'pastil_summary.png';
+        link.href = image;
+        link.click();
+      });
+    }
+
+    function clearData() {
+      if (confirm("Are you sure you want to clear all records?")) {
+        inventory = [];
+        localStorage.removeItem('pastilInventory');
+        alert("All records cleared.");
+      }
     }
   </script>
 </body>
