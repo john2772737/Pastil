@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Pastil Inventory</title>
   <style>
     body {
@@ -56,19 +56,19 @@
 
   <div class="inventory-section">
     <label>Spicy Cooked Today:</label>
-    <input type="number" id="spicyCooked" min="0">
+    <input type="number" id="spicyCooked" min="0" />
 
     <label>Classic Cooked Today:</label>
-    <input type="number" id="classicCooked" min="0">
+    <input type="number" id="classicCooked" min="0" />
 
     <label>Spicy Jars Sold (₱170 each):</label>
-    <input type="number" id="spicySold" min="0" oninput="updateSummary()">
+    <input type="number" id="spicySold" min="0" oninput="updateSummary()" />
 
     <label>Classic Jars Sold (₱150 each):</label>
-    <input type="number" id="classicSold" min="0" oninput="updateSummary()">
+    <input type="number" id="classicSold" min="0" oninput="updateSummary()" />
 
     <label>Today's Expenses (₱):</label>
-    <input type="number" id="expensesInput" min="0" oninput="updateSummary()">
+    <input type="number" id="expensesInput" min="0" oninput="updateSummary()" />
 
     <div class="summary" id="totalPrice">Total Expected Sales: ₱0</div>
     <div class="summary" id="expenses">Today's Expenses: ₱0</div>
@@ -80,6 +80,23 @@
   <script>
     const CLASSIC_PRICE = 150;
     const SPICY_PRICE = 170;
+
+    // Load data from localStorage or empty array
+    function loadInventory() {
+      const data = localStorage.getItem('pastilInventory');
+      return data ? JSON.parse(data) : [];
+    }
+
+    // Save data to localStorage
+    function saveInventory(data) {
+      localStorage.setItem('pastilInventory', JSON.stringify(data));
+    }
+
+    // Format date as YYYY-MM-DD for consistent key
+    function getFormattedDate() {
+      const d = new Date();
+      return d.toISOString().split('T')[0];
+    }
 
     function updateSummary() {
       const spicySold = parseInt(document.getElementById('spicySold').value) || 0;
@@ -103,23 +120,54 @@
 
       const totalSales = (spicySold * SPICY_PRICE) + (classicSold * CLASSIC_PRICE);
       const profit = totalSales - expenses;
-      const date = new Date().toLocaleDateString();
+      const date = getFormattedDate();
 
-      const textContent = 
-`Date: ${date}
-Spicy Cooked: ${spicyCooked}
-Classic Cooked: ${classicCooked}
-Spicy Sold: ${spicySold}
-Classic Sold: ${classicSold}
-Total Sales: ₱${totalSales}
-Expenses: ₱${expenses}
-Profit: ₱${profit}
-------------------------`;
+      let inventory = loadInventory();
+
+      // Check if record for today exists
+      const existingIndex = inventory.findIndex(rec => rec.date === date);
+
+      const newRecord = {
+        date,
+        spicyCooked,
+        classicCooked,
+        spicySold,
+        classicSold,
+        totalSales,
+        expenses,
+        profit
+      };
+
+      if (existingIndex >= 0) {
+        // Update existing record for today
+        inventory[existingIndex] = newRecord;
+      } else {
+        // Add new record
+        inventory.push(newRecord);
+      }
+
+      saveInventory(inventory);
+
+      // Format all records into a single text file
+      let textContent = '';
+      inventory.forEach(record => {
+        textContent += 
+`Date: ${record.date}
+Spicy Cooked: ${record.spicyCooked}
+Classic Cooked: ${record.classicCooked}
+Spicy Sold: ${record.spicySold}
+Classic Sold: ${record.classicSold}
+Total Sales: ₱${record.totalSales}
+Expenses: ₱${record.expenses}
+Profit: ₱${record.profit}
+------------------------
+`;
+      });
 
       const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(textContent);
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `pastil_inventory_${date.replace(/\//g, '-')}.txt`);
+      downloadAnchor.setAttribute("download", `pastil_inventory_records.txt`);
       downloadAnchor.click();
     }
   </script>
