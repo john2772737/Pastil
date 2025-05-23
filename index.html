@@ -5,118 +5,150 @@
   <title>Pastil Inventory</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 2rem;
-      background: #f9f9f9;
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
     }
     h1 {
       text-align: center;
     }
-    .inventory-section {
-      max-width: 500px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    .section {
+      margin-bottom: 20px;
     }
-    label {
-      display: block;
+    label, select, input, button {
+      margin: 5px;
+    }
+    .sales-log {
+      background: #f2f2f2;
+      padding: 10px;
       margin-top: 10px;
     }
-    input[type="number"] {
-      width: 100%;
-      padding: 5px;
-      margin-top: 5px;
-    }
-    button {
-      margin-top: 15px;
+    .info-box {
+      background: #e8f4ff;
       padding: 10px;
-      width: 100%;
-      border: none;
       border-radius: 5px;
-      background-color: #4CAF50;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-    .download-btn {
-      background-color: #2196F3;
-    }
-    #totalPrice {
-      margin-top: 15px;
-      font-weight: bold;
-      font-size: 18px;
-      text-align: center;
     }
   </style>
 </head>
 <body>
+  <h1>Pastil Inventory System</h1>
 
-  <h1>Pastil Inventory</h1>
-  <div class="inventory-section">
-    <label>Spicy Cooked Today:</label>
-    <input type="number" id="spicyCooked" min="0">
+  <div class="section">
+    <label>Type:</label>
+    <select id="type">
+      <option value="Spicy">Spicy</option>
+      <option value="Classic">Classic</option>
+    </select>
+  </div>
 
-    <label>Classic Cooked Today:</label>
-    <input type="number" id="classicCooked" min="0">
+  <div class="section">
+    <label>Set Price per Jar (₱):</label>
+    <input type="number" id="price" />
+    <button onclick="setPrice()">Update Price</button>
+  </div>
 
-    <label>Spicy Jars Sold (₱170 each):</label>
-    <input type="number" id="spicySold" min="0" oninput="updateTotalPrice()">
+  <div class="section">
+    <label>Quantity:</label>
+    <input type="number" id="quantity" value="1" />
+    <button onclick="addInventory()">Add Inventory</button>
+    <button onclick="sellJar()">Sell Jar</button>
+  </div>
 
-    <label>Classic Jars Sold (₱150 each):</label>
-    <input type="number" id="classicSold" min="0" oninput="updateTotalPrice()">
+  <div class="section info-box">
+    <h3>Today's Summary</h3>
+    <p id="inventory"></p>
+    <p id="expenses"></p>
+  </div>
 
-    <div id="totalPrice">Total Expected Sales: ₱0</div>
-
-    <button onclick="saveData()">Save Today's Record</button>
-    <button class="download-btn" onclick="downloadData()">Download Records</button>
+  <div class="section">
+    <h3>Sales History</h3>
+    <div id="salesLog" class="sales-log"></div>
   </div>
 
   <script>
-    const CLASSIC_PRICE = 150;
-    const SPICY_PRICE = 170;
-    const inventory = [];
+    const todayKey = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
-    function updateTotalPrice() {
-      const spicyQty = parseInt(document.getElementById('spicySold').value) || 0;
-      const classicQty = parseInt(document.getElementById('classicSold').value) || 0;
-      const total = (spicyQty * SPICY_PRICE) + (classicQty * CLASSIC_PRICE);
-      document.getElementById('totalPrice').innerText = `Total Expected Sales: ₱${total}`;
-    }
+    let data = JSON.parse(localStorage.getItem(todayKey)) || {
+      Spicy: { inventory: 0, price: 0, added: 0, expenses: 0, sales: [] },
+      Classic: { inventory: 0, price: 0, added: 0, expenses: 0, sales: [] }
+    };
 
     function saveData() {
-      const spicyCooked = parseInt(document.getElementById('spicyCooked').value) || 0;
-      const classicCooked = parseInt(document.getElementById('classicCooked').value) || 0;
-      const spicySold = parseInt(document.getElementById('spicySold').value) || 0;
-      const classicSold = parseInt(document.getElementById('classicSold').value) || 0;
-      const totalSales = (spicySold * SPICY_PRICE) + (classicSold * CLASSIC_PRICE);
-
-      const record = {
-        date: new Date().toLocaleDateString(),
-        spicyCooked,
-        classicCooked,
-        spicySold,
-        classicSold,
-        totalSales
-      };
-
-      inventory.push(record);
-      alert("Record saved for " + record.date);
-      document.querySelectorAll('input[type="number"]').forEach(input => input.value = '');
-      updateTotalPrice(); // Reset total display
+      localStorage.setItem(todayKey, JSON.stringify(data));
     }
 
-    function downloadData() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(inventory, null, 2));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", "pastil_inventory.json");
-      downloadAnchor.click();
+    function getType() {
+      return document.getElementById("type").value;
     }
+
+    function setPrice() {
+      const type = getType();
+      const price = parseFloat(document.getElementById("price").value);
+      if (!isNaN(price)) {
+        data[type].price = price;
+        alert(`${type} price set to ₱${price.toFixed(2)}`);
+        saveData();
+        updateDisplay();
+      }
+    }
+
+    function addInventory() {
+      const type = getType();
+      const qty = parseInt(document.getElementById("quantity").value);
+      if (!isNaN(qty)) {
+        const cost = qty * data[type].price;
+        data[type].inventory += qty;
+        data[type].added += qty;
+        data[type].expenses += cost;
+        saveData();
+        updateDisplay();
+      }
+    }
+
+    function sellJar() {
+      const type = getType();
+      const qty = parseInt(document.getElementById("quantity").value);
+      if (isNaN(qty) || qty > data[type].inventory) {
+        alert("Not enough inventory");
+        return;
+      }
+      const total = qty * data[type].price;
+      data[type].inventory -= qty;
+      data[type].sales.push({ qty, price: data[type].price, total });
+      saveData();
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+      const spicy = data.Spicy;
+      const classic = data.Classic;
+
+      document.getElementById("inventory").innerHTML = `
+        Spicy: ${spicy.inventory} jars left (added: ${spicy.added})<br>
+        Classic: ${classic.inventory} jars left (added: ${classic.added})
+      `;
+
+      document.getElementById("expenses").innerHTML = `
+        Total Expenses Today:<br>
+        Spicy: ₱${spicy.expenses.toFixed(2)}<br>
+        Classic: ₱${classic.expenses.toFixed(2)}
+      `;
+
+      let log = '';
+      for (const type of ["Spicy", "Classic"]) {
+        if (data[type].sales.length) {
+          log += `<b>${type} Sales:</b><br>`;
+          data[type].sales.forEach((sale, i) => {
+            log += `#${i + 1}: ${sale.qty} @ ₱${sale.price.toFixed(2)} = ₱${sale.total.toFixed(2)}<br>`;
+          });
+        }
+      }
+
+      document.getElementById("salesLog").innerHTML = log || 'No sales yet.';
+    }
+
+    updateDisplay();
   </script>
 </body>
 </html>
