@@ -83,7 +83,8 @@
     <div class="summary" id="totalProfit">Profit: 0</div>
     <div class="summary" id="totalLeft">Left: Spicy 0 | Classic 0</div>
 
-    <button onclick="saveAndDownload()">Download Record</button>
+    <button onclick="saveRecord()">Save Record</button>
+    <button onclick="downloadRecord()">Download TXT</button>
     <a href="records.html" target="_blank"><button class="link-btn">View All Records</button></a>
   </div>
 
@@ -91,12 +92,22 @@
     const SPICY_PRICE = 170;
     const CLASSIC_PRICE = 150;
 
+    function getInputValues() {
+      return {
+        date: document.getElementById('dateInput').value,
+        spicyCooked: +document.getElementById('spicyCooked').value || 0,
+        classicCooked: +document.getElementById('classicCooked').value || 0,
+        spicySold: +document.getElementById('spicySold').value || 0,
+        classicSold: +document.getElementById('classicSold').value || 0,
+        expenses: +document.getElementById('expenses').value || 0,
+        credit: +document.getElementById('credit').value || 0,
+      };
+    }
+
     function updateSummary() {
-      const spicyCooked = +document.getElementById('spicyCooked').value || 0;
-      const classicCooked = +document.getElementById('classicCooked').value || 0;
-      const spicySold = +document.getElementById('spicySold').value || 0;
-      const classicSold = +document.getElementById('classicSold').value || 0;
-      const expenses = +document.getElementById('expenses').value || 0;
+      const {
+        spicyCooked, classicCooked, spicySold, classicSold, expenses
+      } = getInputValues();
 
       const totalSales = (spicySold * SPICY_PRICE) + (classicSold * CLASSIC_PRICE);
       const profit = totalSales - expenses;
@@ -108,60 +119,60 @@
       document.getElementById('totalLeft').innerText = `Left: Spicy ${spicyLeft} | Classic ${classicLeft}`;
     }
 
-    function saveAndDownload() {
-      const date = document.getElementById('dateInput').value;
-      const spicyCooked = +document.getElementById('spicyCooked').value || 0;
-      const classicCooked = +document.getElementById('classicCooked').value || 0;
-      const spicySold = +document.getElementById('spicySold').value || 0;
-      const classicSold = +document.getElementById('classicSold').value || 0;
-      const expenses = +document.getElementById('expenses').value || 0;
-      const credit = +document.getElementById('credit').value || 0;
+    function saveRecord() {
+      const values = getInputValues();
 
-      if (!date) return alert("Please select a date.");
-      if (spicySold > spicyCooked || classicSold > classicCooked) {
+      if (!values.date) return alert("Please select a date.");
+      if (values.spicySold > values.spicyCooked || values.classicSold > values.classicCooked) {
         return alert("Sold jars cannot exceed cooked jars.");
       }
 
-      const totalSales = (spicySold * SPICY_PRICE) + (classicSold * CLASSIC_PRICE);
-      const profit = totalSales - expenses;
-      const spicyLeft = spicyCooked - spicySold;
-      const classicLeft = classicCooked - classicSold;
+      const totalSales = (values.spicySold * SPICY_PRICE) + (values.classicSold * CLASSIC_PRICE);
+      const profit = totalSales - values.expenses;
+      const spicyLeft = values.spicyCooked - values.spicySold;
+      const classicLeft = values.classicCooked - values.classicSold;
 
       const record = {
-        date,
-        spicyCooked,
-        classicCooked,
-        spicySold,
-        classicSold,
+        ...values,
         spicyLeft,
         classicLeft,
         totalSales,
-        expenses,
-        profit,
-        credit
+        profit
       };
 
       const records = JSON.parse(localStorage.getItem('pastilRecords') || '{}');
-      records[date] = record;
+      records[values.date] = record;
       localStorage.setItem('pastilRecords', JSON.stringify(records));
 
-      const text = `Date: ${date}
-Spicy Cooked: ${spicyCooked}
-Classic Cooked: ${classicCooked}
-Spicy Sold: ${spicySold}
-Classic Sold: ${classicSold}
-Spicy Left: ${spicyLeft}
-Classic Left: ${classicLeft}
-Total Sales: ${totalSales}
-Expenses: ${expenses}
-Profit: ${profit}
-Credit: ${credit}
+      alert("Record saved.");
+    }
+
+    function downloadRecord() {
+      const values = getInputValues();
+
+      if (!values.date) return alert("Please select a date.");
+      const records = JSON.parse(localStorage.getItem('pastilRecords') || '{}');
+      const r = records[values.date];
+
+      if (!r) return alert("Please save the record before downloading.");
+
+      const text = `Date: ${r.date}
+Spicy Cooked: ${r.spicyCooked}
+Classic Cooked: ${r.classicCooked}
+Spicy Sold: ${r.spicySold}
+Classic Sold: ${r.classicSold}
+Spicy Left: ${r.spicyLeft}
+Classic Left: ${r.classicLeft}
+Total Sales: ${r.totalSales}
+Expenses: ${r.expenses}
+Profit: ${r.profit}
+Credit: ${r.credit}
 ------------------`;
 
       const blob = new Blob([text], { type: "text/plain" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = `pastil_${date}.txt`;
+      a.download = `pastil_${r.date}.txt`;
       a.click();
     }
   </script>
