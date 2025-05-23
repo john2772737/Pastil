@@ -114,6 +114,16 @@
       const classicSold = parseInt(document.getElementById('classicSold').value) || 0;
       const expenses = parseFloat(document.getElementById('expensesInput').value) || 0;
 
+      // Prevent over-selling
+      if (spicySold > spicyCooked) {
+        alert("Error: Spicy jars sold cannot be greater than cooked.");
+        return;
+      }
+      if (classicSold > classicCooked) {
+        alert("Error: Classic jars sold cannot be greater than cooked.");
+        return;
+      }
+
       const spicyLeft = spicyCooked - spicySold;
       const classicLeft = classicCooked - classicSold;
 
