@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pastil Inventory</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      background: #f9f9f9;
+    }
+    h1 {
+      text-align: center;
+    }
+    .inventory-section {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input[type="number"] {
+      width: 100%;
+      padding: 5px;
+      margin-top: 5px;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px;
+      width: 100%;
+      border: none;
+      border-radius: 5px;
+      background-color: #4CAF50;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .download-btn {
+      background-color: #2196F3;
+    }
+    #totalPrice {
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 18px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Pastil Inventory</h1>
+  <div class="inventory-section">
+    <label>Spicy Cooked Today:</label>
+    <input type="number" id="spicyCooked" min="0">
+
+    <label>Classic Cooked Today:</label>
+    <input type="number" id="classicCooked" min="0">
+
+    <label>Spicy Jars Sold (₱170 each):</label>
+    <input type="number" id="spicySold" min="0" oninput="updateTotalPrice()">
+
+    <label>Classic Jars Sold (₱150 each):</label>
+    <input type="number" id="classicSold" min="0" oninput="updateTotalPrice()">
+
+    <div id="totalPrice">Total Expected Sales: ₱0</div>
+
+    <button onclick="saveData()">Save Today's Record</button>
+    <button class="download-btn" onclick="downloadData()">Download Records</button>
+  </div>
+
+  <script>
+    const CLASSIC_PRICE = 150;
+    const SPICY_PRICE = 170;
+    const inventory = [];
+
+    function updateTotalPrice() {
+      const spicyQty = parseInt(document.getElementById('spicySold').value) || 0;
+      const classicQty = parseInt(document.getElementById('classicSold').value) || 0;
+      const total = (spicyQty * SPICY_PRICE) + (classicQty * CLASSIC_PRICE);
+      document.getElementById('totalPrice').innerText = `Total Expected Sales: ₱${total}`;
+    }
+
+    function saveData() {
+      const spicyCooked = parseInt(document.getElementById('spicyCooked').value) || 0;
+      const classicCooked = parseInt(document.getElementById('classicCooked').value) || 0;
+      const spicySold = parseInt(document.getElementById('spicySold').value) || 0;
+      const classicSold = parseInt(document.getElementById('classicSold').value) || 0;
+      const totalSales = (spicySold * SPICY_PRICE) + (classicSold * CLASSIC_PRICE);
+
+      const record = {
+        date: new Date().toLocaleDateString(),
+        spicyCooked,
+        classicCooked,
+        spicySold,
+        classicSold,
+        totalSales
+      };
+
+      inventory.push(record);
+      alert("Record saved for " + record.date);
+      document.querySelectorAll('input[type="number"]').forEach(input => input.value = '');
+      updateTotalPrice(); // Reset total display
+    }
+
+    function downloadData() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(inventory, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "pastil_inventory.json");
+      downloadAnchor.click();
+    }
+  </script>
+</body>
+</html>
