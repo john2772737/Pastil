@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Pastil Inventory</title>
   <style>
     body {
@@ -81,21 +81,17 @@
     const CLASSIC_PRICE = 150;
     const SPICY_PRICE = 170;
 
-    // Load data from localStorage or empty array
+    function getFormattedDate() {
+      return new Date().toISOString().split('T')[0];
+    }
+
     function loadInventory() {
       const data = localStorage.getItem('pastilInventory');
       return data ? JSON.parse(data) : [];
     }
 
-    // Save data to localStorage
     function saveInventory(data) {
       localStorage.setItem('pastilInventory', JSON.stringify(data));
-    }
-
-    // Format date as YYYY-MM-DD for consistent key
-    function getFormattedDate() {
-      const d = new Date();
-      return d.toISOString().split('T')[0];
     }
 
     function updateSummary() {
@@ -118,37 +114,35 @@
       const classicSold = parseInt(document.getElementById('classicSold').value) || 0;
       const expenses = parseFloat(document.getElementById('expensesInput').value) || 0;
 
+      const spicyLeft = spicyCooked - spicySold;
+      const classicLeft = classicCooked - classicSold;
+
       const totalSales = (spicySold * SPICY_PRICE) + (classicSold * CLASSIC_PRICE);
       const profit = totalSales - expenses;
       const date = getFormattedDate();
 
       let inventory = loadInventory();
-
-      // Check if record for today exists
-      const existingIndex = inventory.findIndex(rec => rec.date === date);
-
       const newRecord = {
         date,
         spicyCooked,
         classicCooked,
         spicySold,
         classicSold,
+        spicyLeft,
+        classicLeft,
         totalSales,
         expenses,
         profit
       };
 
+      const existingIndex = inventory.findIndex(r => r.date === date);
       if (existingIndex >= 0) {
-        // Update existing record for today
         inventory[existingIndex] = newRecord;
       } else {
-        // Add new record
         inventory.push(newRecord);
       }
-
       saveInventory(inventory);
 
-      // Format all records into a single text file
       let textContent = '';
       inventory.forEach(record => {
         textContent += 
@@ -157,6 +151,8 @@ Spicy Cooked: ${record.spicyCooked}
 Classic Cooked: ${record.classicCooked}
 Spicy Sold: ${record.spicySold}
 Classic Sold: ${record.classicSold}
+Spicy Left: ${record.spicyLeft}
+Classic Left: ${record.classicLeft}
 Total Sales: ₱${record.totalSales}
 Expenses: ₱${record.expenses}
 Profit: ₱${record.profit}
