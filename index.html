@@ -155,9 +155,8 @@
       }
       saveInventory(inventory);
 
-      let textContent = '';
-      inventory.forEach(r => {
-        textContent += 
+      const r = record;
+      const textContent = 
 `Date: ${r.date}
 Spicy Cooked: ${r.spicyCooked}
 Classic Cooked: ${r.classicCooked}
@@ -169,12 +168,11 @@ Total Sales: ${r.totalSales}
 Expenses: ${r.expenses}
 Profit: ${r.profit}
 ------------------------\n`;
-      });
 
       const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(textContent);
       const downloadAnchor = document.createElement('a');
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", "pastil_inventory_records.txt");
+      downloadAnchor.setAttribute("download", `pastil_inventory_${date}.txt`);
       downloadAnchor.click();
     }
   </script>
