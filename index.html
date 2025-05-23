@@ -35,16 +35,13 @@
       width: 100%;
       border: none;
       border-radius: 5px;
-      background-color: #4CAF50;
+      background-color: #2196F3;
       color: white;
       font-size: 16px;
       cursor: pointer;
     }
     button:hover {
-      background-color: #45a049;
-    }
-    .download-btn {
-      background-color: #2196F3;
+      background-color: #1976D2;
     }
     .summary {
       margin-top: 15px;
@@ -77,14 +74,12 @@
     <div class="summary" id="expenses">Today's Expenses: ₱0</div>
     <div class="summary" id="profit">Today's Profit: ₱0</div>
 
-    <button onclick="saveData()">Save Today's Record</button>
-    <button class="download-btn" onclick="downloadData()">Download Records (.txt)</button>
+    <button onclick="downloadData()">Download Record (.txt)</button>
   </div>
 
   <script>
     const CLASSIC_PRICE = 150;
     const SPICY_PRICE = 170;
-    const inventory = [];
 
     function updateSummary() {
       const spicySold = parseInt(document.getElementById('spicySold').value) || 0;
@@ -99,58 +94,32 @@
       document.getElementById('profit').innerText = `Today's Profit: ₱${profit}`;
     }
 
-    function saveData() {
+    function downloadData() {
       const spicyCooked = parseInt(document.getElementById('spicyCooked').value) || 0;
       const classicCooked = parseInt(document.getElementById('classicCooked').value) || 0;
       const spicySold = parseInt(document.getElementById('spicySold').value) || 0;
       const classicSold = parseInt(document.getElementById('classicSold').value) || 0;
       const expenses = parseFloat(document.getElementById('expensesInput').value) || 0;
+
       const totalSales = (spicySold * SPICY_PRICE) + (classicSold * CLASSIC_PRICE);
       const profit = totalSales - expenses;
       const date = new Date().toLocaleDateString();
 
-      const record = {
-        date,
-        spicyCooked,
-        classicCooked,
-        spicySold,
-        classicSold,
-        totalSales,
-        expenses,
-        profit
-      };
-
-      const existingIndex = inventory.findIndex(entry => entry.date === date);
-      if (existingIndex >= 0) {
-        inventory[existingIndex] = record;
-        alert("Today's record updated.");
-      } else {
-        inventory.push(record);
-        alert("Record saved for " + date);
-      }
-
-      document.querySelectorAll('input[type="number"]').forEach(input => input.value = '');
-      updateSummary();
-    }
-
-    function downloadData() {
-      const textContent = inventory.map(entry =>
-        `Date: ${entry.date}
-Spicy Cooked: ${entry.spicyCooked}
-Classic Cooked: ${entry.classicCooked}
-Spicy Sold: ${entry.spicySold}
-Classic Sold: ${entry.classicSold}
-Total Sales: ₱${entry.totalSales}
-Expenses: ₱${entry.expenses}
-Profit: ₱${entry.profit}
-------------------------`
-      ).join('\n');
+      const textContent = 
+`Date: ${date}
+Spicy Cooked: ${spicyCooked}
+Classic Cooked: ${classicCooked}
+Spicy Sold: ${spicySold}
+Classic Sold: ${classicSold}
+Total Sales: ₱${totalSales}
+Expenses: ₱${expenses}
+Profit: ₱${profit}
+------------------------`;
 
       const dataStr = "data:text/plain;charset=utf-8," + encodeURIComponent(textContent);
       const downloadAnchor = document.createElement('a');
-      const today = new Date().toISOString().split('T')[0];
       downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `pastil_inventory_${today}.txt`);
+      downloadAnchor.setAttribute("download", `pastil_inventory_${date.replace(/\//g, '-')}.txt`);
       downloadAnchor.click();
     }
   </script>
