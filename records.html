@@ -2,46 +2,72 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>All Pastil Records</title>
+  <title>Pastil Records</title>
   <style>
-    body { font-family: Arial; margin: 2rem; background: #f4f4f4; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background: #f4f4f4;
+    }
     table {
-      width: 100%; border-collapse: collapse; background: white;
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
     }
     th, td {
-      padding: 8px 12px; border: 1px solid #ccc; text-align: center;
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
     }
-    th { background-color: #4CAF50; color: white; }
+    th {
+      background-color: #2196F3;
+      color: white;
+    }
   </style>
 </head>
 <body>
-  <h2>Pastil Sales Records</h2>
-  <table id="recordsTable">
+  <h2>Pastil Records</h2>
+  <table id="recordTable">
     <thead>
       <tr>
-        <th>Date</th><th>Spicy Cooked</th><th>Classic Cooked</th>
-        <th>Spicy Sold</th><th>Classic Sold</th>
-        <th>Spicy Left</th><th>Classic Left</th>
-        <th>Sales</th><th>Expenses</th><th>Credit</th><th>Profit</th>
+        <th>Date</th>
+        <th>Spicy Cooked</th>
+        <th>Classic Cooked</th>
+        <th>Spicy Sold</th>
+        <th>Classic Sold</th>
+        <th>Spicy Left</th>
+        <th>Classic Left</th>
+        <th>Sales</th>
+        <th>Expenses</th>
+        <th>Profit</th>
+        <th>Credit</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
   <script>
-    const table = document.querySelector("#recordsTable tbody");
-    const records = JSON.parse(localStorage.getItem('pastilInventory') || '{}');
+    const data = JSON.parse(localStorage.getItem('pastilRecords') || '{}');
+    const tbody = document.querySelector('#recordTable tbody');
 
-    Object.values(records).forEach(r => {
-      const row = table.insertRow();
-      row.innerHTML = `
-        <td>${r.date}</td>
-        <td>${r.spicyCooked}</td><td>${r.classicCooked}</td>
-        <td>${r.spicySold}</td><td>${r.classicSold}</td>
-        <td>${r.spicyLeft}</td><td>${r.classicLeft}</td>
-        <td>${r.totalSales}</td><td>${r.expenses}</td>
-        <td>${r.credit}</td><td>${r.profit}</td>
+    Object.keys(data).sort().forEach(date => {
+      const r = data[date];
+      const row = `
+        <tr>
+          <td>${r.date}</td>
+          <td>${r.spicyCooked}</td>
+          <td>${r.classicCooked}</td>
+          <td>${r.spicySold}</td>
+          <td>${r.classicSold}</td>
+          <td>${r.spicyLeft}</td>
+          <td>${r.classicLeft}</td>
+          <td>${r.totalSales}</td>
+          <td>${r.expenses}</td>
+          <td>${r.profit}</td>
+          <td>${r.credit ?? 0}</td>
+        </tr>
       `;
+      tbody.innerHTML += row;
     });
   </script>
 </body>
